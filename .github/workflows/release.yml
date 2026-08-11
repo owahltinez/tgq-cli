@@ -1,0 +1,61 @@
+name: release
+
+# Tag push is the release trigger: `git tag v0.1.0 && git push origin v0.1.0`.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          python-version: "3.11"
+          enable-cache: true
+
+      - run: uv sync --extra dev --frozen
+
+      # A tag that disagrees with pyproject publishes a version nobody can
+      # reproduce from the tag. PyPI refuses re-uploads, so catching it here
+      # is the only cheap moment to catch it.
+      - name: Verify tag matches project version
+        run: |
+          version="$(python -c 'import tomllib, pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$version" != "$tag" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match pyproject version ${version}"
+            exit 1
+          fi
+
+      # The tag already passed CI on its branch, but a tag can point anywhere;
+      # re-running the suite is what makes the artefact trustworthy.
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
+      - run: uv run pytest -q
+
+      - run: uv build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    # Trusted publishing: PyPI mints a short-lived token from this job's OIDC
+    # identity, so there is no API token stored in the repository.
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

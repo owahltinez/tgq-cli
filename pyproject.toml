@@ -1,0 +1,59 @@
+[project]
+name = "tgq-cli"
+version = "0.1.0"
+description = "Read-only Telegram client for the terminal: search, inspect and export public channels."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Oscar Wahltinez" }]
+keywords = ["telegram", "osint", "jsonl", "cli", "research"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Utilities",
+]
+dependencies = [
+    # Pinned: upstream moved to Codeberg and v2 has been in alpha since Oct 2025
+    # without shipping. Build against the v1 API.
+    "telethon==1.44.0",
+    "click>=8.1",
+    "beautifulsoup4>=4.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/owahltinez/tgq-cli"
+Repository = "https://github.com/owahltinez/tgq-cli"
+Issues = "https://github.com/owahltinez/tgq-cli/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+tgq = "tgq.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tgq"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# Ruff is the contributor-facing linter. Defaults plus import sorting: the
+# stricter rule sets fight the formatter used on this repo.
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.lint]
+extend-select = ["I"]

@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A superseded run on the same branch tells us nothing; cancel it.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor and ceiling of requires-python, plus the version in
+        # between: the suite is offline, so the full matrix stays cheap.
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      # --frozen fails rather than silently re-resolving, so a stale uv.lock
+      # is reported here instead of producing a green run against untested
+      # dependency versions.
+      - run: uv sync --extra dev --frozen
+
+      - run: uv run ruff check src tests
+
+      - run: uv run ruff format --check src tests
+
+      - run: uv run pytest -q
