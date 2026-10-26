@@ -37,6 +37,7 @@ def _message(**kw):
         "fwd_from": None,
         "media": None,
         "post_author": None,
+        "from_id": None,
         "edit_date": None,
         "grouped_id": None,
         "entities": None,
@@ -286,6 +287,28 @@ def test_attached_photo_is_counted_as_media():
     )
 
     assert rec["has_media"] is True
+
+
+def test_message_record_sender_attribution():
+    """from_id decomposes into from_user_id or from_channel_id, or neither."""
+    user_msg = _message(from_id=SimpleNamespace(user_id=90210))
+    user_rec = message_record(user_msg, _channel(), retrieved_at=RETRIEVED)
+    assert user_rec["from_user_id"] == 90210
+    assert user_rec["from_channel_id"] is None
+
+    channel_msg = _message(from_id=SimpleNamespace(channel_id=555))
+    channel_rec = message_record(
+        channel_msg, _channel(), retrieved_at=RETRIEVED
+    )
+    assert channel_rec["from_user_id"] is None
+    assert channel_rec["from_channel_id"] == 555
+
+    broadcast_msg = _message(from_id=None)
+    broadcast_rec = message_record(
+        broadcast_msg, _channel(), retrieved_at=RETRIEVED
+    )
+    assert broadcast_rec["from_user_id"] is None
+    assert broadcast_rec["from_channel_id"] is None
 
 
 # --- cross-backend schema parity ------------------------------------------

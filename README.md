@@ -47,8 +47,9 @@ tgq preview ceuta_news --since 2026-07-27 > out/msgs.jsonl
 Lower fidelity than `messages`, and the gaps are explicit rather than papered
 over. **Available:** text, timestamps, view counts, forward origin (channel and
 message id). **Emitted as `null`:** `forwards`, `reactions`, `replies_count`,
-`channel_id`, `edit_date`, `post_author`, and `fwd_from_date` — so
-`latency_seconds` from `tgq forwards` is always `null` on preview data.
+`channel_id`, `edit_date`, `post_author`, `from_user_id`, `from_channel_id`,
+and `fwd_from_date` — so `latency_seconds` from `tgq forwards` is always `null`
+on preview data.
 
 Subscriber count is logged to stderr, not included in rows.
 
@@ -79,7 +80,7 @@ directory, and must never be committed or shared.
 | `tgq search QUERY` | session | Find channels and groups by name or title |
 | `tgq preview CHANNEL` | no auth | Public web preview: text, views, forward origin |
 | `tgq channels NAMES...` | session | Channel metadata: subscribers, verified, kind, created_at |
-| `tgq messages CHANNEL` | session | History with views, forwards, reactions, forward origin |
+| `tgq messages CHANNEL` | session | History with views, forwards, reactions, forward origin, `from_user_id`, `from_channel_id` |
 | `tgq members GROUP` | session | Group members with account flags and last-seen |
 | `tgq forwards` | none | origin → relay edges with cascade latency |
 | `tgq activity` | none | Per-channel span and `days_silent`, most-dormant first |
@@ -205,7 +206,8 @@ This tool collects public data from a live platform. Before using it:
 - **Collected rows contain personal data about identifiable people.** If you are
   in a jurisdiction with data-protection law, that law applies to you. Decide
   your retention, pseudonymisation and publication posture before collecting,
-  not after.
+  not after. Sender IDs are personal data and should be pseudonymized (keyed
+  hash) before storage.
 - **Telegram's API Terms §1.5 prohibit using collected data to train or
   fine-tune AI models.** Classifying with a pre-trained model is inference and is
   unaffected; fitting one on the corpus is not.

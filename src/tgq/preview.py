@@ -164,6 +164,8 @@ def _record(node, *, channel, retrieved_at):
         **_forward(node),
         "has_media": node.select_one(MEDIA_SELECTOR) is not None,
         "post_author": None,
+        "from_user_id": None,
+        "from_channel_id": None,
         "edit_date": None,
         "grouped_id": None,
         # Interpolating a missing id produced ".../None"; a broken

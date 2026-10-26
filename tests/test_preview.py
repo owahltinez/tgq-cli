@@ -54,6 +54,13 @@ def test_channel_identity_uses_username_since_preview_has_no_numeric_id(page):
     assert first["channel_id"] is None
 
 
+def test_sender_fields_are_none_on_preview(page):
+    first = page.messages[0]
+
+    assert first["from_user_id"] is None
+    assert first["from_channel_id"] is None
+
+
 def test_text_flattened_across_inline_markup_and_breaks(page):
     assert page.messages[0]["text"] == "crossing at tarajal now\nsecond line"
 

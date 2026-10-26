@@ -120,6 +120,7 @@ def message_record(message, channel, *, retrieved_at):
     an absent field mean different things for reach estimation.
     """
     replies = getattr(message, "replies", None)
+    from_id = getattr(message, "from_id", None)
     return {
         "channel_id": channel.id,
         "channel_username": getattr(channel, "username", None),
@@ -133,6 +134,8 @@ def message_record(message, channel, *, retrieved_at):
         **_forward(getattr(message, "fwd_from", None)),
         "has_media": _has_media(getattr(message, "media", None)),
         "post_author": getattr(message, "post_author", None),
+        "from_user_id": getattr(from_id, "user_id", None),
+        "from_channel_id": getattr(from_id, "channel_id", None),
         "edit_date": _iso(getattr(message, "edit_date", None)),
         "grouped_id": getattr(message, "grouped_id", None),
         "source_url": f"{_channel_url(channel)}/{message.id}",
